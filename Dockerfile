@@ -1,6 +1,16 @@
-# Sử dụng image Java làm base image
-FROM openjdk:17-jdk-slim                                                                                                                                                                                                                        # Cài đặt thư mục làm việc trong container
-WORKDIR /app                                                                                                            
-# Copy file jar từ local vào container                                                                                  COPY target/product-service-0.0.1-SNAPSHOT.jar /app/myapp.jar                                                                                                                                                                                      # Mở cổng cho ứng dụng (nếu cần)
-EXPOSE 8080                                                                                                                                                                                                                                     # Chạy ứng dụng khi container khởi động
-ENTRYPOINT ["java", "-jar", "myapp.jar"]                                                                                                                              
+FROM maven:3.5.3-jdk-8-alpine AS build
+
+WORKDIR /app
+COPY . .
+RUN mvn install -DskipTests=true
+
+FROM alpine:3.19
+
+RUN apk add openjdk8
+
+WORKDIR /run
+COPY --from=build /app/target/ product-service-0.0.1-SNAPSHOT.jar  /run/product-service-0.0.1-SNAPSHOT.jar
+
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar", "product-service-0.0.1-SNAPSHOT.jar"]  
