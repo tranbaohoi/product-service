@@ -1,0 +1,6 @@
+# Sử dụng image Java làm base image
+FROM openjdk:17-jdk-slim                                                                                                                                                                                                                        # Cài đặt thư mục làm việc trong container
+WORKDIR /app                                                                                                            
+# Copy file jar từ local vào container                                                                                  COPY target/product-service-0.0.1-SNAPSHOT.jar /app/myapp.jar                                                                                                                                                                                      # Mở cổng cho ứng dụng (nếu cần)
+EXPOSE 8080                                                                                                                                                                                                                                     # Chạy ứng dụng khi container khởi động
+ENTRYPOINT ["java", "-jar", "myapp.jar"]                                                                                                                              
