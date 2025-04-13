@@ -1,11 +1,32 @@
+# Sử dụng image Java 17 từ Docker Hub
+FROM openjdk:17-jdk-slim as builder
 
-FROM alpine:3.19.1
+# Đặt thư mục làm việc trong container
+WORKDIR /app
 
-RUN apk add openjdk8
+# Sao chép các file Maven (hoặc Gradle) vào container
+COPY . .
 
-WORKDIR /run
-COPY --from=build /app/target/ product-service-0.0.1-SNAPSHOT.jar  /run/product-service-0.0.1-SNAPSHOT.jar
+# Cài đặt dependencies của ứng dụng
+RUN mvn dependency:go-offline
 
-EXPOSE 8080
+# Sao chép mã nguồn vào container
+COPY src ./src
 
-ENTRYPOINT ["java", "-jar", "product-service-0.0.1-SNAPSHOT.jar"]  
+# Build ứng dụng
+RUN mvn clean package -DskipTests
+
+# Tạo image mới từ một base image chứa JDK để chạy ứng dụng
+FROM openjdk:17-jdk-slim
+
+# Đặt thư mục làm việc
+WORKDIR /app
+
+# Sao chép file jar đã build vào container
+COPY --from=builder /app/target/product-service-0.0.1-SNAPSHOT.jar /app/your-app.jar
+
+# Mở port mà ứng dụng sẽ chạy
+EXPOSE 8081
+
+# Lệnh chạy ứng dụng
+CMD ["java", "-jar", "your-app.jar"]
